@@ -59,6 +59,8 @@ requests==2.31.0
 rich==13.4.2
 six==1.16.0
 smmap==5.0.0
+soundfile==0.12.1
+soundfile==0.10.2
 snowflake==0.0.3
 streamlit==1.23.1
 tenacity==8.2.2
