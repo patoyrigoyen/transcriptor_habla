@@ -1,13 +1,8 @@
 import streamlit as st
 import numpy as np
-# import time
-import librosa
-# import os
-# import subprocess
 import whisper
 import contextlib
 import wave
-# import datetime
 from pyannote.audio import Audio
 from pyannote.core import Segment
 import torch
@@ -20,6 +15,7 @@ from sklearn.cluster import AgglomerativeClustering
 from pydub import AudioSegment
 from pydub.playback import play
 from io import BytesIO
+import tempfile
 
 
 
@@ -30,8 +26,12 @@ def segment_embedding(segment):
   waveform, sample_rate = audio.crop(path, clip)
 
   # Convert to mono
-  waveform = librosa.to_mono(waveform.numpy())
-  waveform = torch.from_numpy(waveform)
+  #   waveform = librosa.to_mono(waveform.numpy())
+  #   waveform = torch.from_numpy(waveform)
+  # Convert to mono
+  if waveform.dim() == 2:
+      waveform = waveform.mean(dim=0)
+  print("WORKED")
 
   # Add batch and channel dimensions
   waveform = waveform.unsqueeze(0).unsqueeze(0)
@@ -46,7 +46,6 @@ def segment_embedding(segment):
 st.subheader("**Transcribe tus entrevistas (beta)**", )
 
 ###########################################################################
-
 with st.container():
     # upload audio file with streamlit
     settings_expander = st.expander(label='Configura el audio')
@@ -65,7 +64,10 @@ button_transcribe = col2.button("Transcribir Audio", type='primary', use_contain
 if button_transcribe:
     if audio_file is not None:
         st.success("Transcribiendo tu audio, esto puede tomar ~20min...")
-        path = '/Users/patricio.yrigoyen/Desktop/Transcriptor/'+audio_file.name
+        ##path = '/Users/patricio.yrigoyen/Desktop/Transcriptor/'+audio_file.name
+        tfile = tempfile.NamedTemporaryFile(delete=False) 
+        tfile.write(audio_file.getvalue())
+        path = tfile.name
 
         print("Beginning transcription")
         model = whisper.load_model("small")
@@ -97,7 +99,7 @@ if button_transcribe:
         for i in range(len(segments)):
             segments[i]["speaker"] = 'SPEAKER ' + str(labels[i] + 1)
 
-# st.text_input('Identifiquemos a los hablantes, presiona 0 para continuar...', '')
+        # st.text_input('Identifiquemos a los hablantes, presiona 0 para continuar...', '')
         speaker = ['0']*num_speakers
         input_val = '0'
 
@@ -144,4 +146,3 @@ if button_transcribe:
 
     else:
         st.error("Por favor carga un archivo primero")
-
