@@ -70,7 +70,7 @@ if button_transcribe:
         path = tfile.name
 
         print("Beginning transcription")
-        model = whisper.load_model("small")
+        model = whisper.load_model("large-v2")
         result = model.transcribe(path)
         print("Finished transcription")
         segments = result['segments']
